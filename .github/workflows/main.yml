@@ -8,14 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: set up python
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
           architecture: x64
-      - name: install python virtualenv
+      - name: Install Python virtualenv
         run: pip3 install virtualenv
-      - name: setup virtualenv
+      - name: Setup virtualenv
         uses: actions/cache@v2
         id: cache-venv
         with:
@@ -23,20 +23,20 @@ jobs:
           key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-venv-
-      - name: activate and install dependencies into venv
+      - name: Activate and install dependencies into venv
         run: python -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
-      - name: install dependencies for test
+      - name: Install dependencies for testing
         run: pip3 install -r requirements.txt
-      - name: build and run tests
+      - name: Build and run tests
         run: . venv/bin/activate && pytest
-      - name: create a zip file of dependencies
+      - name: Create a zip file of dependencies
         run: |
           cd ./venv/lib/python3.7/site-packages
           zip -r9 ../../../../api.zip .
-      - name: add app to zip file
+      - name: Add app files to zip
         run: cd ./app && zip -g ../api.zip -r .
-      - name: upload zip file artifact
+      - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
           name: api
@@ -47,28 +47,20 @@ jobs:
       - continuos-integration
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: install aws cli
-        uses: unfor19/install-aws-cli-action@v1
-        with:
-          version: 2
-          arch: amd64
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      - name: download artifact api.zip
+      - name: Download artifact api.zip
         uses: actions/download-artifact@v2
         with:
           name: api
-      - name: upload to s3 bucket
-        run: aws s3 cp api.zip s3://serverless-luis-api/serverless-api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      - name: deploy lambda function
-        run: aws lambda update-function-code --function-name serverless-luis-api --s3-bucket serverless-luis-api --s3-key api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: my-github-actions-role
+      - name: Upload to S3 Bucket
+        run: |
+          aws s3 cp api.zip s3://serverless-luis-api/serverless-api.zip
+      - name: Deploy Lambda Function
+        run: |
+          aws lambda update-function-code --function-name serverless-luis-api --s3-bucket serverless-luis-api --s3-key api.zip

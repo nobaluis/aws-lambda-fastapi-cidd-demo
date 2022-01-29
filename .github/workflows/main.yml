@@ -64,4 +64,4 @@ jobs:
           aws s3 cp api.zip s3://serverless-luis-api/serverless-api.zip
       - name: Deploy Lambda Function
         run: |
-          aws lambda update-function-code --function-name serverless-luis-api --s3-bucket serverless-luis-api --s3-key api.zip
+          aws lambda update-function-code --function-name serverless-luis-api --s3-bucket serverless-luis-api --s3-key serverless-api.zip

@@ -33,7 +33,7 @@ jobs:
       - name: create a zip file of dependencies
         run: |
           cd ./venv/lib/python3.7/site-packages
-          zip -r9 ../../../../api.zip
+          zip -r9 ../../../../api.zip .
       - name: add app to zip file
         run: cd ./app && zip -g ../api.zip -r .
       - name: upload zip file artifact

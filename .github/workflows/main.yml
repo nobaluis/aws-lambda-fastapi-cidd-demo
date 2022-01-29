@@ -11,7 +11,7 @@ jobs:
       - name: set up python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
           architecture: x64
       - name: install python virtualenv
         run: pip3 install virtualenv
@@ -32,7 +32,7 @@ jobs:
         run: . venv/bin/activate && pytest
       - name: create a zip file of dependencies
         run: |
-          cd ./venv/lib/python3.7/site-packages
+          cd ./venv/lib/python3.9/site-packages
           zip -r9 ../../../../api.zip .
       - name: add app to zip file
         run: cd ./app && zip -g ../api.zip -r .

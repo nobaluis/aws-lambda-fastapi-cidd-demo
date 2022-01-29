@@ -32,7 +32,7 @@ jobs:
         run: . venv/bin/activate && pytest
       - name: create a zip file of dependencies
         run: |
-          cd ./venv/lib/site-packages
+          cd ./venv/lib/python3.7/site-packages
           zip -r9 ../../../../api.zip .
       - name: add app to zip file
         run: cd ./app && zip -g ../api.zip -r .
